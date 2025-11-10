@@ -74,3 +74,53 @@ claer
 clear
 git add .
 exit
+clear
+which rails
+rails db:create
+rails server -b 0.0.0.0 -p 3000
+clear
+rails server -b 0.0.0.0 -p 3001
+rails server -b 0.0.0.0 -p 3001
+rails server -b 0.0.0.0 -p 3000
+rails db:drop
+rails db:create
+rails db:migrate
+clear
+rails server -b 0.0.0.0 -p 3000
+rails server -b 0.0.0.0 -p 3000
+rails server -b 0.0.0.0 -p 3000
+rails server -b 0.0.0.0 -p 3000
+clear
+ls
+clear
+clear
+rails db:drop
+rails db:create
+clear
+rails server -b 0.0.0.0 -p 3000
+rails db:migrate
+rails server -b 0.0.0.0 -p 3000
+rails server -b 0.0.0.0 -p 3000
+rails server -b 0.0.0.0 -p 3000
+rails c
+rails server -b 0.0.0.0 -p 3000
+clear
+rails server -b 0.0.0.0 -p 3000
+rails server -b 0.0.0.0 -p 3000
+rails server -b 0.0.0.0 -p 3000
+rails db:drop
+rails db:create
+rails db:migrate
+clear
+rails server -b 0.0.0.0 -p 3000
+clear
+rails server -b 0.0.0.0 -p 3000
+rails server -b 0.0.0.0 -p 3000
+rails c
+rails server -b 0.0.0.0 -p 3000
+rails db:drop
+rails db:create
+rails db:migrate
+rails server -b 0.0.0.0 -p 3000
+rails server -b 0.0.0.0 -p 3000
+exit

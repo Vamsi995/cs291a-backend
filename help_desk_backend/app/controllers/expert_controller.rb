@@ -4,10 +4,20 @@ class ExpertController < ApplicationController
   before_action :require_expert!
 
   def queue
+    waiting = Conversation
+                .where(status: 'waiting')
+                .where.not(initiator_id: current_user.id)          # hide my own conversations
+                # .where.not(assigned_expert_id: current_user.id)    # (redundant for waiting, but safe)
+                .includes(:messages, :initiator)
+
+    assigned = Conversation
+                .assigned_to(current_user.id)
+                .includes(:messages, :initiator)
+
     render json: {
-      waitingConversations: Conversation.waiting.map { |c| ConversationSerializer.new(c).as_json },
-      assignedConversations: Conversation.assigned_to(current_user.id).map { |c| ConversationSerializer.new(c).as_json }
-    } # :contentReference[oaicite:18]{index=18}
+      waitingConversations: waiting.map   { |c| ConversationSerializer.new(c).as_json },
+      assignedConversations: assigned.map { |c| ConversationSerializer.new(c).as_json }
+    }
   end
 
   def claim

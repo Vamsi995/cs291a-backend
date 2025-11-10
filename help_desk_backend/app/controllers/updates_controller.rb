@@ -32,29 +32,89 @@ class UpdatesController < ApplicationController
   end
 
   # GET /api/expert-queue/updates?expertId=me&since=2025-11-08T23:00:00Z
+  # def expert_queue
+  #   expert_user_id = resolve_expert_user_id!(params[:expertId]) # raises 400 if missing/invalid
+  #   since          = parse_since(params[:since])
+
+  #   # Waiting = unassigned
+  #   waiting = Conversation.where(status: "waiting")
+  #   waiting = waiting.where("updated_at >= ?", since) if since
+  #   waiting = waiting.includes(:messages, :initiator)
+
+  #   # Assigned to this expert
+  #   assigned = Conversation.where(assigned_expert_id: expert_user_id)
+  #   assigned = assigned.where("updated_at >= ?", since) if since
+  #   assigned = assigned.includes(:messages, :initiator)
+
+  #   payload = [
+  #     {
+  #       waitingConversations: waiting.map { |c| convo_json(c) },
+  #       assignedConversations: assigned.map { |c| convo_json(c) }
+  #     }
+  #   ]
+
+  #   render json: payload
+  # end
+  # GET /api/expert-queue/updates?expertId=me&since=2025-11-08T23:00:00Z
   def expert_queue
-    expert_user_id = resolve_expert_user_id!(params[:expertId]) # raises 400 if missing/invalid
+    # Resolve expert id but always trust the JWT identity to avoid impersonation
+    user_id = resolve_expert_user_id!(params[:expertId])
     since          = parse_since(params[:since])
 
-    # Waiting = unassigned
+    expert_user = ExpertProfile.find_by(user_id: user_id)
+    puts "here"
+    puts user_id
+    puts expert_user.id
+    # Waiting = unassigned conversations not involving the current user
     waiting = Conversation.where(status: "waiting")
+                          .where.not(initiator_id: user_id)
+                          # .where.not(assigned_expert_id: expert_user_id)
     waiting = waiting.where("updated_at >= ?", since) if since
     waiting = waiting.includes(:messages, :initiator)
 
-    # Assigned to this expert
-    assigned = Conversation.where(assigned_expert_id: expert_user_id)
+    # "Assigned" list but still exclude anything involving the current user
+    # (i.e., show active conversations assigned to OTHER experts, not me)
+    assigned = assigned = Conversation.where(assigned_expert_id: expert_user.id)
     assigned = assigned.where("updated_at >= ?", since) if since
     assigned = assigned.includes(:messages, :initiator)
 
-    payload = [
+    render json: [
       {
-        waitingConversations: waiting.map { |c| convo_json(c) },
+        waitingConversations: waiting.map  { |c| convo_json(c) },
         assignedConversations: assigned.map { |c| convo_json(c) }
       }
     ]
-
-    render json: payload
   end
+
+# GET /api/expert-queue/updates?expertId=me&since=2025-11-08T23:00:00Z
+  # def expert_queue
+  #   expert_user_id = resolve_expert_user_id!(params[:expertId])
+  #   since = parse_since(params[:since])
+
+  #   # Only include conversations the current expert is NOT part of:
+  #   waiting = Conversation.where(status: "waiting")
+  #                         .where.not(initiator_id: current_user.id)
+  #                         .where.not(assigned_expert_id: current_user.id)
+  #   waiting = waiting.where("updated_at >= ?", since) if since
+  #   waiting = waiting.includes(:messages, :initiator)
+
+  #   assigned = Conversation.where(status: "active")
+  #                         .where.not(initiator_id: current_user.id)
+  #                         .where.not(assigned_expert_id: current_user.id)
+  #   assigned = assigned.where("updated_at >= ?", since) if since
+  #   assigned = assigned.includes(:messages, :initiator)
+
+  #   payload = [
+  #     {
+  #       waitingConversations: waiting.map { |c| convo_json(c) },
+  #       assignedConversations: assigned.map { |c| convo_json(c) }
+  #     }
+  #   ]
+
+  #   render json: payload
+  # end
+
+
 
   private
 
